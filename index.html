@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#111713" />
+    <meta name="description" content="不在——世界很吵，但你可以随时关门。" />
+    <title>不在｜口袋里的避难所</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="grain" aria-hidden="true"></div>
+    <button class="account-button" type="button" data-action="account" aria-label="登录并同步">
+      <span class="account-dot" aria-hidden="true"></span>
+      <span data-account-label>游客 · 登录</span>
+    </button>
+    <main class="app-shell">
+      <section class="scene scene--door is-active" data-scene="door" aria-labelledby="door-title" role="button" tabindex="0" aria-label="轻轻敲一下，进入不在">
+        <div class="door-glow" aria-hidden="true"></div>
+        <p class="eyebrow">口袋里的避难所</p>
+        <h1 id="door-title" class="door-question">在吗？</h1>
+        <p class="door-knock quiet-button" aria-hidden="true">
+          <span>轻轻敲一下</span>
+        </p>
+        <p class="door-whisper">世界很吵，但你可以随时关门。</p>
+      </section>
+
+      <section class="scene scene--choose" data-scene="choose" aria-labelledby="choose-title" hidden>
+        <header class="scene-header">
+          <p class="eyebrow">先不必成为更好的谁</p>
+          <h2 id="choose-title">此刻，你想以什么样子存在？</h2>
+          <p>没有正确答案。选一个你看见时，肩膀会松一点的。</p>
+        </header>
+
+        <div class="forms" aria-label="选择此刻的化身" data-forms></div>
+      </section>
+
+      <section class="scene scene--sanctuary" data-scene="sanctuary" aria-labelledby="sanctuary-title" hidden>
+        <div class="weather" aria-hidden="true">
+          <i class="weather-orb weather-orb--one"></i>
+          <i class="weather-orb weather-orb--two"></i>
+          <i class="weather-orb weather-orb--three"></i>
+        </div>
+
+        <nav class="sanctuary-nav" aria-label="避难所工具">
+          <div class="nav-cluster">
+            <button class="icon-button sound-button" type="button" data-action="sound" aria-label="开启环境声" aria-pressed="false">
+              <span class="sound-icon" aria-hidden="true">环境声</span>
+            </button>
+            <button class="icon-button" type="button" data-action="letters" aria-label="查看我的来信">信</button>
+          </div>
+          <button class="icon-button" type="button" data-action="rechoose" aria-label="重新选择化身">换</button>
+        </nav>
+
+        <div class="sanctuary-center">
+          <p class="eyebrow" data-form-title>一块石头的房间</p>
+          <div class="element-visual" data-element-visual aria-hidden="true">
+            <span class="visual-main"></span>
+            <span class="visual-piece visual-piece--1"></span>
+            <span class="visual-piece visual-piece--2"></span>
+            <span class="visual-piece visual-piece--3"></span>
+            <span class="visual-piece visual-piece--4"></span>
+            <span class="visual-piece visual-piece--5"></span>
+            <span class="visual-piece visual-piece--6"></span>
+            <span class="visual-piece visual-piece--7"></span>
+            <span class="visual-piece visual-piece--8"></span>
+            <span class="visual-mark" data-form-mark>石</span>
+          </div>
+          <h2 id="sanctuary-title" data-scene-line>不说话，也是一种回答。</h2>
+          <p class="breath-guide">闭上眼 · 深呼吸</p>
+        </div>
+
+        <div class="sanctuary-actions">
+          <button class="primary-button" type="button" data-action="release">我想和自己说说话</button>
+          <button class="text-button" type="button" data-action="rest">只在这里待一会儿</button>
+        </div>
+      </section>
+
+      <section class="scene scene--release" data-scene="release" aria-labelledby="release-title" hidden>
+        <div class="release-card">
+          <h2 id="release-title">此刻，有什么想说给自己听？</h2>
+          <p>不用想完整。一句话、一个词，都可以。</p>
+          <label class="sr-only" for="release-input">写下想和自己说的话</label>
+          <textarea id="release-input" maxlength="300" rows="5" placeholder="比如：我有没有好好爱自己……"></textarea>
+          <div class="release-footer">
+            <button class="text-button" type="button" data-action="cancel-release">先不写了</button>
+            <button class="primary-button" type="button" data-action="let-go" disabled data-write-to>写给石头</button>
+          </div>
+        </div>
+        <div class="dissolve-message" aria-live="polite" hidden>
+          <p data-dissolve-copy></p>
+          <button class="primary-button" type="button" data-action="certificate">领取不在场证明</button>
+          <button class="text-button" type="button" data-action="return">回到避难所</button>
+        </div>
+      </section>
+    </main>
+
+    <dialog class="certificate-dialog" data-certificate-dialog>
+      <div class="certificate" data-certificate-card>
+        <button class="dialog-close" type="button" data-action="close-certificate" aria-label="关闭">×</button>
+        <p class="certificate-kicker">NOT PRESENT · 不在场证明</p>
+        <div class="certificate-mark" data-certificate-mark>石</div>
+        <h2>刚才，我不在。</h2>
+        <p class="certificate-body" data-certificate-body>我去做了一块不必回答的石头，让时间从身边安静经过。</p>
+        <div class="certificate-meta">
+          <span data-certificate-time></span>
+          <span data-certificate-form></span>
+        </div>
+        <button class="certificate-letter-link" type="button" data-action="letters-from-certificate">回看我的来信</button>
+        <p class="certificate-sign">不在 · BUZAI</p>
+      </div>
+      <div class="dialog-actions">
+        <button class="primary-button" type="button" data-action="download">保存这张证明</button>
+        <p>保存后，可以把它留给自己。</p>
+      </div>
+    </dialog>
+
+    <div class="rest-overlay" data-rest-overlay hidden>
+      <p>允许自己不在</p>
+      <div class="element-visual element-visual--rest" data-rest-visual aria-hidden="true"></div>
+      <button class="text-button" type="button" data-action="end-rest">想回来了</button>
+    </div>
+
+    <dialog class="soft-dialog custom-dialog" data-custom-dialog>
+      <button class="dialog-close dialog-close--dark" type="button" data-action="close-custom" aria-label="关闭">×</button>
+      <p class="eyebrow">你的喜欢，不必在选项里</p>
+      <h2>此刻，你还想成为什么？</h2>
+      <label for="custom-form-input">可以是一场雨、一只鲸，或任何只有你知道的存在。</label>
+      <input id="custom-form-input" maxlength="16" placeholder="写下你的元素" autocomplete="off" />
+      <button class="primary-button" type="button" data-action="confirm-custom" disabled>就这样存在</button>
+    </dialog>
+
+    <dialog class="soft-dialog letters-dialog" data-letters-dialog>
+      <button class="dialog-close dialog-close--dark" type="button" data-action="close-letters" aria-label="关闭">×</button>
+      <header>
+        <p class="eyebrow" data-storage-note>只保存在这台设备里</p>
+        <h2>我的来信</h2>
+        <p>你曾经写下的，没有消失。它们安静地待在这里。</p>
+      </header>
+      <div class="letters-list" data-letters-list></div>
+    </dialog>
+
+    <dialog class="soft-dialog account-dialog" data-account-dialog>
+      <button class="dialog-close dialog-close--dark" type="button" data-action="close-account" aria-label="关闭">×</button>
+
+      <div data-account-guest>
+        <p class="eyebrow">此刻是游客模式</p>
+        <h2>让来信，跟着你走</h2>
+        <p class="account-copy">不登录也可以继续待在这里。登录以后，手机和电脑会看见同一份来信。</p>
+        <form class="login-form" data-login-form>
+          <label for="login-email">你的邮箱</label>
+          <input id="login-email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="name@example.com" required />
+          <button class="primary-button" type="submit">把登录链接寄给我</button>
+        </form>
+        <p class="account-hint">没有密码。打开邮件里的链接，就能回来。</p>
+      </div>
+
+      <div data-account-sent hidden>
+        <p class="eyebrow">信已经在路上</p>
+        <h2>去邮箱里，轻轻点一下</h2>
+        <p class="account-copy">登录链接已经寄出。打开它以后，这台设备上的来信会被带到云端。</p>
+        <button class="text-button" type="button" data-action="change-email">换一个邮箱</button>
+      </div>
+
+      <div data-account-user hidden>
+        <p class="eyebrow">云端已连接</p>
+        <h2>你在这里，也在别处</h2>
+        <p class="account-copy"><span data-account-email></span><br /><span data-sync-message>来信正在安静地同步。</span></p>
+        <button class="text-button" type="button" data-action="sign-out">退出登录</button>
+      </div>
+
+      <p class="account-status" data-account-status role="status" aria-live="polite"></p>
+    </dialog>
+
+    <dialog class="soft-dialog confirm-dialog" data-delete-dialog>
+      <p class="eyebrow">这一次，由你决定</p>
+      <h2>让这封信离开吗？</h2>
+      <p>删除以后，它不会再出现在“我的来信”里。</p>
+      <div class="confirm-actions">
+        <button class="text-button" type="button" data-action="cancel-delete">先留着</button>
+        <button class="primary-button danger-button" type="button" data-action="confirm-delete">删除这封信</button>
+      </div>
+    </dialog>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
