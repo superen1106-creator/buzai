@@ -213,7 +213,7 @@ const formOrder = [
 const SUPABASE_URL = "https://iewzsdznkkofdrkyxnev.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_CwKoK4wS-CRQwSb5mgZwqQ_X2eomoXq";
 const supabaseClient = window.supabase?.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  auth: { persistSession: true, detectSessionInUrl: true, flowType: "pkce" },
+  auth: { persistSession: true, detectSessionInUrl: true, flowType: "implicit" },
 });
 
 function createClientId() {
@@ -1031,9 +1031,16 @@ async function initializeAuth() {
     setAccountMode("guest", "云端暂时没有醒来，游客模式仍然可以使用。 ");
     return;
   }
-  const { data } = await supabaseClient.auth.getSession();
+  const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+  const queryParams = new URLSearchParams(window.location.search);
+  const authError = hashParams.get("error_description") || queryParams.get("error_description");
+  const { data, error } = await supabaseClient.auth.getSession();
   authReady = true;
   await handleSession(data.session);
+  if (!data.session && (authError || error)) {
+    setAccountMode("guest", "这条登录链接没有生效。请重新寄一封，并用刚收到的最新链接回来。 ");
+    accountDialog.showModal();
+  }
   supabaseClient.auth.onAuthStateChange((_event, session) => {
     setTimeout(() => { void handleSession(session); }, 0);
   });
