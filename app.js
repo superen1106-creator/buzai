@@ -278,7 +278,7 @@ const SUPABASE_URL = "https://iewzsdznkkofdrkyxnev.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_CwKoK4wS-CRQwSb5mgZwqQ_X2eomoXq";
 const PUBLIC_APP_URL = "https://superen1106-creator.github.io/buzai/";
 const supabaseClient = window.supabase?.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  auth: { persistSession: true, detectSessionInUrl: true, flowType: "implicit" },
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: "implicit" },
 });
 
 function createClientId() {
@@ -1414,5 +1414,5 @@ applyForm(selectedForm, { persist: false });
 void initializeAuth();
 
 if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
-  window.addEventListener("load", () => { void navigator.serviceWorker.register("service-worker.js?v=12"); });
+  window.addEventListener("load", () => { void navigator.serviceWorker.register("service-worker.js?v=13"); });
 }
