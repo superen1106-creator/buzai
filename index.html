@@ -4,12 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#111713" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="description" content="不在——世界很吵，但你可以随时关门。" />
     <title>不在｜口袋里的避难所</title>
+    <link rel="manifest" href="manifest.webmanifest?v=11" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500&amp;display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css?v=11" />
   </head>
   <body>
     <div class="grain" aria-hidden="true"></div>
@@ -20,21 +23,42 @@
     <main class="app-shell">
       <section class="scene scene--door is-active" data-scene="door" aria-labelledby="door-title" role="button" tabindex="0" aria-label="轻轻敲一下，进入不在">
         <div class="door-glow" aria-hidden="true"></div>
-        <p class="eyebrow">口袋里的避难所</p>
+        <p class="eyebrow" data-door-eyebrow>口袋里的避难所</p>
         <h1 id="door-title" class="door-question">在吗？</h1>
         <p class="door-knock quiet-button" aria-hidden="true">
           <span>轻轻敲一下</span>
         </p>
-        <p class="door-whisper">世界很吵，但你可以随时关门。</p>
+        <p class="door-whisper" data-door-whisper>世界很吵，但你可以随时关门。</p>
+      </section>
+
+      <section class="scene scene--return" data-scene="return" aria-labelledby="return-title" hidden>
+        <div class="return-room">
+          <p class="eyebrow">这个房间还记得你</p>
+          <div class="element-visual element-visual--return" data-return-visual aria-hidden="true"></div>
+          <h2 id="return-title">你上次是一块石头。</h2>
+          <p data-return-memory>这里还留着一点你来过的痕迹。</p>
+          <div class="return-actions">
+            <button class="primary-button" type="button" data-action="return-same">嗯，就这样</button>
+            <button class="text-button" type="button" data-action="return-change">今天想换一种</button>
+          </div>
+        </div>
       </section>
 
       <section class="scene scene--choose" data-scene="choose" aria-labelledby="choose-title" hidden>
         <header class="scene-header">
           <p class="eyebrow">先不必成为更好的谁</p>
-          <h2 id="choose-title">此刻，你想以什么样子存在？</h2>
-          <p>没有正确答案。选一个你看见时，肩膀会松一点的。</p>
+          <h2 id="choose-title">今天，你更靠近哪一种感觉？</h2>
+          <p>先选一种感觉，再看见适合它的存在。也可以直接看全部。</p>
         </header>
 
+        <div class="feeling-filter" role="group" aria-label="选择此刻的感觉" data-feeling-filter>
+          <button type="button" data-feeling="still" aria-pressed="true"><span>想静止</span><small>不必回应</small></button>
+          <button type="button" data-feeling="flow" aria-pressed="false"><span>想流动</span><small>让它经过</small></button>
+          <button type="button" data-feeling="held" aria-pressed="false"><span>想被包住</span><small>暂时安全</small></button>
+          <button type="button" data-feeling="become" aria-pressed="false"><span>想换一种存在</span><small>不必做人</small></button>
+          <button type="button" data-feeling="all" aria-pressed="false"><span>看全部</span><small>慢慢选择</small></button>
+        </div>
+        <p class="choice-count" data-choice-count></p>
         <div class="forms" aria-label="选择此刻的化身" data-forms></div>
       </section>
 
@@ -71,6 +95,8 @@
           </div>
           <h2 id="sanctuary-title" data-scene-line>不说话，也是一种回答。</h2>
           <p class="breath-guide">闭上眼 · 深呼吸</p>
+          <p class="interaction-hint" data-interaction-hint>轻轻碰一碰石头</p>
+          <p class="memory-whisper" data-memory-whisper></p>
         </div>
 
         <div class="sanctuary-actions">
@@ -83,6 +109,15 @@
         <div class="release-card">
           <h2 id="release-title">此刻，有什么想说给自己听？</h2>
           <p>不用想完整。一句话、一个词，都可以。</p>
+          <div class="reply-modes" role="group" aria-label="选择回应方式" data-reply-modes>
+            <button type="button" data-reply-mode="listen" aria-pressed="true">
+              <span>只听见我</span><small>接住，不提问</small>
+            </button>
+            <button type="button" data-reply-mode="reflect" aria-pressed="false">
+              <span>陪我想一会儿</span><small>只问一个轻一点的问题</small>
+            </button>
+          </div>
+          <p class="reply-boundary">回应只负责听见与提问，不评价，也不诊断。</p>
           <label class="sr-only" for="release-input">写下想和自己说的话</label>
           <textarea id="release-input" maxlength="300" rows="5" placeholder="比如：我有没有好好爱自己……"></textarea>
           <div class="release-footer">
@@ -92,6 +127,10 @@
         </div>
         <div class="dissolve-message" aria-live="polite" hidden>
           <p data-dissolve-copy></p>
+          <div class="carry-prompt" data-carry-prompt hidden>
+            <p>要不要把这些来信带在身上？</p>
+            <button class="text-button" type="button" data-action="carry-letters">换设备，也不让它们丢失</button>
+          </div>
           <button class="primary-button" type="button" data-action="certificate">领取不在场证明</button>
           <button class="text-button" type="button" data-action="return">回到避难所</button>
         </div>
@@ -113,16 +152,31 @@
         <p class="certificate-sign">不在 · BUZAI</p>
       </div>
       <div class="dialog-actions">
-        <button class="primary-button" type="button" data-action="download">保存这张证明</button>
-        <p>保存后，可以把它留给自己。</p>
+        <div class="certificate-actions">
+          <button class="primary-button" type="button" data-action="share">分享这次不在</button>
+          <button class="text-button" type="button" data-action="download">保存这张证明</button>
+        </div>
+        <p data-share-status>分享不会带走你写下的私密文字。</p>
       </div>
     </dialog>
 
     <div class="rest-overlay" data-rest-overlay hidden>
-      <p>允许自己不在</p>
+      <p data-rest-copy>允许自己不在</p>
       <div class="element-visual element-visual--rest" data-rest-visual aria-hidden="true"></div>
       <button class="text-button" type="button" data-action="end-rest">想回来了</button>
     </div>
+
+    <dialog class="soft-dialog moment-dialog" data-moment-dialog>
+      <button class="dialog-close dialog-close--dark" type="button" data-action="close-moment" aria-label="关闭">×</button>
+      <p class="eyebrow">这一次，不用计时</p>
+      <h2>想怎么待着？</h2>
+      <div class="moment-options">
+        <button type="button" data-moment="breath"><span>一段呼吸</span><small>先不去任何地方</small></button>
+        <button type="button" data-moment="sleep"><span>睡前</span><small>今天到这里就够了</small></button>
+        <button type="button" data-moment="after"><span>情绪之后</span><small>把外面的声音放远</small></button>
+        <button type="button" data-moment="home"><span>只是想回来</span><small>这里还在</small></button>
+      </div>
+    </dialog>
 
     <dialog class="soft-dialog custom-dialog" data-custom-dialog>
       <button class="dialog-close dialog-close--dark" type="button" data-action="close-custom" aria-label="关闭">×</button>
@@ -186,6 +240,6 @@
     </dialog>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="app.js?v=20260715-2"></script>
+    <script src="app.js?v=11"></script>
   </body>
 </html>

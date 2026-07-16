@@ -210,8 +210,73 @@ const formOrder = [
   "star", "bird", "light", "night", "bamboo", "seed", "tide",
 ];
 
+const feelingForms = {
+  still: ["stone", "mountain", "seed", "moss", "tree", "moon"],
+  flow: ["wind", "river", "sea", "rain", "tide", "leaf"],
+  held: ["night", "fog", "snow", "cloud", "light", "fire"],
+  become: ["mushroom", "bird", "flower", "bamboo", "sand", "star", "human"],
+};
+
+const interactionFamilies = {
+  pulse: ["stone", "mountain", "seed", "human"],
+  flow: ["wind", "river", "sea", "rain", "tide"],
+  drift: ["leaf", "cloud", "fog", "snow", "sand", "bird"],
+  grow: ["mushroom", "moss", "flower", "tree", "bamboo"],
+  glow: ["moon", "fire", "star", "light", "night"],
+};
+
+const interactionCopy = {
+  pulse: "把手放在这里，感受一点重量",
+  flow: "轻轻划过，让它从指尖经过",
+  drift: "碰一碰，看它慢慢离开原处",
+  grow: "轻轻触碰，允许一点生长",
+  glow: "碰一碰，为自己留一点光",
+};
+
+const listenReplies = {
+  pulse: ["它听见了。", "这句话可以先放在这里。"],
+  flow: ["它听见了。", "不用急着让一切立刻过去。"],
+  drift: ["它听见了。", "这句话暂时不需要找到方向。"],
+  grow: ["它听见了。", "还没有答案，也可能正在发生什么。"],
+  glow: ["它听见了。", "被看见，就已经够了一点。"],
+};
+
+const formQuestions = {
+  mushroom: "如果可以躲进阴影里一会儿，你最想放下什么？",
+  stone: "如果今天只放下一件事，会是哪一件？",
+  wind: "把别人的声音吹远一点，你听见自己说了什么？",
+  leaf: "如果不急着找到方向，你想先落在哪里？",
+  human: "此刻的你，最希望被允许成为什么样子？",
+  cloud: "如果不用保持原来的形状，你想先变轻哪一点？",
+  rain: "哪一种情绪，正在等待被允许落下来？",
+  river: "如果慢一点也能抵达，你愿意先停在哪一步？",
+  sea: "此刻的潮汐，更接近平静，还是汹涌？",
+  moon: "不必圆满的话，今天可以缺少哪一部分？",
+  mountain: "有什么事，可以暂时不推动它？",
+  fog: "不用看清全部的话，下一小步会是什么？",
+  snow: "你最想把哪一种声音调小一点？",
+  fire: "此刻，你最需要为自己留住哪一点温度？",
+  moss: "哪一件很小的心事，也值得被你看见？",
+  flower: "如果不为了被看见，你想为自己做什么？",
+  tree: "哪一个答案，也许需要慢慢长出来？",
+  sand: "今天，你愿意只承担哪一粒沙的重量？",
+  star: "不必照亮全部的话，哪里亮一点就够了？",
+  bird: "如果不必留下证明，你想往哪里飞一小圈？",
+  light: "只照见、不评价时，你看见了什么？",
+  night: "今晚，有什么可以先被夜色包住？",
+  bamboo: "如果可以弯一下，你想从哪里松开一点？",
+  seed: "还不用发芽的话，你想先在黑暗里守住什么？",
+  tide: "哪一次回来，也可以不被叫作反复？",
+  custom: "以你喜欢的方式存在时，什么可以先不解释？",
+};
+
+function interactionFamilyFor(key) {
+  return Object.entries(interactionFamilies).find(([, keys]) => keys.includes(key))?.[0] || "drift";
+}
+
 const SUPABASE_URL = "https://iewzsdznkkofdrkyxnev.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_CwKoK4wS-CRQwSb5mgZwqQ_X2eomoXq";
+const PUBLIC_APP_URL = "https://superen1106-creator.github.io/buzai/";
 const supabaseClient = window.supabase?.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: { persistSession: true, detectSessionInUrl: true, flowType: "implicit" },
 });
@@ -256,16 +321,29 @@ const accountSent = document.querySelector("[data-account-sent]");
 const accountUser = document.querySelector("[data-account-user]");
 const loginForm = document.querySelector("[data-login-form]");
 const storageNote = document.querySelector("[data-storage-note]");
+const returnVisual = document.querySelector("[data-return-visual]");
+const momentDialog = document.querySelector("[data-moment-dialog]");
+const carryPrompt = document.querySelector("[data-carry-prompt]");
+const shareStatus = document.querySelector("[data-share-status]");
+const sharedFormKey = new URLSearchParams(window.location.search).get("form");
 const visualMarkup = `
   <span class="visual-main"></span>
   <span class="visual-piece visual-piece--1"></span><span class="visual-piece visual-piece--2"></span>
   <span class="visual-piece visual-piece--3"></span><span class="visual-piece visual-piece--4"></span>
   <span class="visual-piece visual-piece--5"></span><span class="visual-piece visual-piece--6"></span>
   <span class="visual-piece visual-piece--7"></span><span class="visual-piece visual-piece--8"></span>
-  <span class="visual-mark"></span>`;
+  <span class="visual-mark"></span>
+  <span class="memory-traces" aria-hidden="true">
+    <i></i><i></i><i></i><i></i><i></i><i></i>
+  </span>`;
 
-let selectedForm = localStorage.getItem("buzai-form") || "stone";
+const hadSavedForm = localStorage.getItem("buzai-form");
+let selectedForm = hadSavedForm || "stone";
 if (!forms[selectedForm]) selectedForm = "stone";
+if (sharedFormKey && forms[sharedFormKey]) selectedForm = sharedFormKey;
+let hasVisited = localStorage.getItem("buzai-has-visited") === "true" || Boolean(hadSavedForm);
+let currentFeeling = "still";
+let replyMode = localStorage.getItem("buzai-reply-mode") || "listen";
 let enteredAt = new Date();
 let audioContext;
 let soundNodes = [];
@@ -290,6 +368,106 @@ function showScene(name) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+function memoryStorageKey(user = currentUser) {
+  return user ? `buzai-sanctuary-memory-${user.id}` : "buzai-sanctuary-memory";
+}
+
+function emptyMemory() {
+  return { totalVisits: 0, forms: {} };
+}
+
+function normalizeMemory(value) {
+  const memory = value && typeof value === "object" ? value : emptyMemory();
+  const formsMemory = {};
+  Object.entries(memory.forms || {}).forEach(([key, item]) => {
+    formsMemory[key] = {
+      visits: Math.max(0, Number(item?.visits) || 0),
+      letters: Math.max(0, Number(item?.letters) || 0),
+      lastVisit: item?.lastVisit || null,
+    };
+  });
+  return { totalVisits: Math.max(0, Number(memory.totalVisits) || 0), forms: formsMemory };
+}
+
+function getMemoryFromKey(key) {
+  try { return normalizeMemory(JSON.parse(localStorage.getItem(key) || "{}")); }
+  catch { return emptyMemory(); }
+}
+
+function getMemory() {
+  return getMemoryFromKey(memoryStorageKey());
+}
+
+function setMemory(memory, user = currentUser) {
+  localStorage.setItem(memoryStorageKey(user), JSON.stringify(normalizeMemory(memory)));
+}
+
+function mergeMemories(first, second) {
+  const a = normalizeMemory(first);
+  const b = normalizeMemory(second);
+  const result = emptyMemory();
+  result.totalVisits = a.totalVisits + b.totalVisits;
+  new Set([...Object.keys(a.forms), ...Object.keys(b.forms)]).forEach((key) => {
+    const one = a.forms[key] || {};
+    const two = b.forms[key] || {};
+    result.forms[key] = {
+      visits: (one.visits || 0) + (two.visits || 0),
+      letters: (one.letters || 0) + (two.letters || 0),
+      lastVisit: [one.lastVisit, two.lastVisit].filter(Boolean).sort().at(-1) || null,
+    };
+  });
+  return result;
+}
+
+function selectedMemory(memory = getMemory(), key = selectedForm) {
+  return memory.forms[key] || { visits: 0, letters: 0, lastVisit: null };
+}
+
+function memoryLevel(memory = getMemory(), key = selectedForm) {
+  const item = selectedMemory(memory, key);
+  return Math.min(6, Math.max(0, Math.ceil((item.visits + item.letters * 2) / 2)));
+}
+
+function memoryCopy(memory = getMemory(), key = selectedForm) {
+  const item = selectedMemory(memory, key);
+  if (item.letters >= 4) return "有一些话，已经在这里长成了安静的纹理。";
+  if (item.letters >= 1) return "你写下的话，在这里留下了一点痕迹。";
+  if (item.visits >= 4) return "这个房间，已经认得你回来时的脚步。";
+  if (item.visits >= 2) return "这里记得你来过。";
+  return "这里还很安静，等你按自己的方式待一会儿。";
+}
+
+function updateMemoryPresentation() {
+  const level = String(memoryLevel());
+  document.querySelectorAll("[data-element-visual], [data-return-visual], [data-rest-visual]").forEach((visual) => {
+    if (visual) visual.dataset.memoryLevel = level;
+  });
+  document.querySelector("[data-memory-whisper]").textContent = memoryCopy();
+  document.querySelector("[data-return-memory]").textContent = memoryCopy();
+}
+
+function recordVisit(key) {
+  const memory = getMemory();
+  const item = memory.forms[key] || { visits: 0, letters: 0, lastVisit: null };
+  item.visits += 1;
+  item.lastVisit = new Date().toISOString();
+  memory.forms[key] = item;
+  memory.totalVisits += 1;
+  setMemory(memory);
+  updateMemoryPresentation();
+  queueProfileSync();
+}
+
+function recordLetterMemory(key) {
+  const memory = getMemory();
+  const item = memory.forms[key] || { visits: 0, letters: 0, lastVisit: null };
+  item.letters += 1;
+  memory.forms[key] = item;
+  setMemory(memory);
+  updateMemoryPresentation();
+  queueProfileSync();
+}
+
 function createFormCard(key, form) {
   const button = document.createElement("button");
   button.className = "form-card";
@@ -310,15 +488,37 @@ function createFormCard(key, form) {
 
 function renderFormChoices() {
   formsContainer.replaceChildren();
-  formOrder.forEach((key) => formsContainer.append(createFormCard(key, forms[key])));
-  if (forms.custom) formsContainer.append(createFormCard("custom", forms.custom));
+  formsContainer.dataset.feeling = currentFeeling;
+  const visibleKeys = currentFeeling === "all" ? formOrder : feelingForms[currentFeeling];
+  visibleKeys.forEach((key) => formsContainer.append(createFormCard(key, forms[key])));
+  if (forms.custom && (currentFeeling === "all" || currentFeeling === "become")) {
+    formsContainer.append(createFormCard("custom", forms.custom));
+  }
   formsContainer.append(createFormCard("other", {
     mark: "＋", name: "其他", note: "写下只有你知道的存在",
   }));
+  document.querySelector("[data-choice-count]").textContent = currentFeeling === "all" ? "全部的存在，都在这里。" : "先看这些。第一眼的喜欢，就很好。";
 }
 
+document.querySelector("[data-feeling-filter]").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-feeling]");
+  if (!button) return;
+  currentFeeling = button.dataset.feeling;
+  document.querySelectorAll("[data-feeling]").forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
+  renderFormChoices();
+  haptic(8);
+});
+
 function setVisual(container, form) {
-  container.className = `${container.dataset.restVisual !== undefined ? "element-visual element-visual--rest" : "element-visual"} visual--${form.visual}`;
+  const modifier = container.dataset.restVisual !== undefined
+    ? "element-visual element-visual--rest"
+    : container.dataset.returnVisual !== undefined
+      ? "element-visual element-visual--return"
+      : "element-visual";
+  const family = interactionFamilyFor(selectedForm);
+  container.className = `${modifier} visual--${form.visual} interaction--${family}`;
+  container.dataset.interactionFamily = family;
+  container.dataset.memoryLevel = String(memoryLevel());
   container.innerHTML = visualMarkup;
   container.querySelector(".visual-mark").textContent = form.mark;
 }
@@ -337,9 +537,9 @@ function updateSoundButton(active) {
   button.querySelector(".sound-icon").textContent = active ? `${label} · 开` : label;
 }
 
-function applyForm(key) {
+function applyForm(key, { persist = true } = {}) {
   selectedForm = key;
-  localStorage.setItem("buzai-form", key);
+  if (persist) localStorage.setItem("buzai-form", key);
   const form = forms[key];
   document.documentElement.style.setProperty("--bg", form.colors[0]);
   document.documentElement.style.setProperty("--glow", form.colors[1]);
@@ -351,6 +551,11 @@ function applyForm(key) {
   document.querySelector("[data-certificate-body]").textContent = form.certificate || certificateCopy[key];
   document.querySelector("[data-write-to]").textContent = `写给${form.target}`;
   setVisual(document.querySelector("[data-element-visual]"), form);
+  setVisual(returnVisual, form);
+  document.querySelector("#return-title").textContent = `你上次是${form.name}。`;
+  const family = interactionFamilyFor(key);
+  document.querySelector("[data-interaction-hint]").textContent = interactionCopy[family];
+  updateMemoryPresentation();
   updateSoundButton(false);
   queueProfileSync();
 }
@@ -358,6 +563,9 @@ function applyForm(key) {
 function enterForm(key) {
   haptic(18);
   applyForm(key);
+  hasVisited = true;
+  localStorage.setItem("buzai-has-visited", "true");
+  recordVisit(key);
   enteredAt = new Date();
   setTimeout(() => showScene("sanctuary"), 220);
 }
@@ -372,7 +580,10 @@ function openDoor() {
     doorTitle.classList.remove("is-leaving");
     doorTitle.classList.add("is-returning");
   }, 650);
-  setTimeout(() => showScene("choose"), 4400);
+  setTimeout(() => {
+    if (sharedFormKey && forms[sharedFormKey]) enterForm(sharedFormKey);
+    else showScene(hasVisited ? "return" : "choose");
+  }, 4400);
 }
 
 doorScene.addEventListener("click", openDoor);
@@ -381,6 +592,9 @@ doorScene.addEventListener("keydown", (event) => {
   event.preventDefault();
   openDoor();
 });
+
+document.querySelector('[data-action="return-same"]').addEventListener("click", () => enterForm(selectedForm));
+document.querySelector('[data-action="return-change"]').addEventListener("click", () => showScene("choose"));
 
 formsContainer.addEventListener("click", (event) => {
   const button = event.target.closest("[data-form]");
@@ -441,6 +655,21 @@ document.querySelector('[data-action="return"]').addEventListener("click", () =>
 
 input.addEventListener("input", () => { letGoButton.disabled = !input.value.trim(); });
 
+function setReplyMode(mode) {
+  replyMode = mode === "reflect" ? "reflect" : "listen";
+  localStorage.setItem("buzai-reply-mode", replyMode);
+  document.querySelectorAll("[data-reply-mode]").forEach((button) => {
+    button.setAttribute("aria-pressed", String(button.dataset.replyMode === replyMode));
+  });
+}
+
+document.querySelector("[data-reply-modes]").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-reply-mode]");
+  if (!button) return;
+  setReplyMode(button.dataset.replyMode);
+  haptic(8);
+});
+
 function lettersStorageKey(user = currentUser) {
   return user ? `buzai-letters-user-${user.id}` : "buzai-letters";
 }
@@ -490,16 +719,36 @@ function saveLetter(text) {
   const letters = getLetters();
   letters.push(letter);
   setLetters(letters);
+  recordLetterMemory(selectedForm);
   if (currentUser) void syncLetterToCloud(letter);
   return letter;
 }
 
-function renderReply(text) {
+function gentleQuestion(text) {
+  if (/来不及|迟到|时间|赶不上|太晚/.test(text)) return "如果今天只放下一件事，会是哪一件？";
+  if (/累|疲惫|撑不住|没力气|辛苦/.test(text)) return "此刻，你最希望被允许停下哪一部分？";
+  if (/爱自己|喜欢自己|讨厌自己|不够好|自卑/.test(text)) return "如果不急着改变，你愿意先看见哪一部分自己？";
+  if (/害怕|担心|焦虑|不安|恐惧/.test(text)) return "这份担心，正在努力替你守住什么？";
+  if (/不知道|迷茫|选择|决定|方向/.test(text)) return "现在不用决定的话，你想先靠近哪一点？";
+  if (/别人|他们|关系|吵架|离开|孤独/.test(text)) return "把别人的声音放远一点，你自己的声音说了什么？";
+  return formQuestions[selectedForm] || formQuestions.custom;
+}
+
+function generateReply(text) {
+  const form = forms[selectedForm];
+  const family = interactionFamilyFor(selectedForm);
+  const first = `${form.target}听见了。`;
+  if (replyMode === "reflect") return [first, gentleQuestion(text)];
+  return [first, listenReplies[family]?.[1] || "这句话可以先放在这里。"];
+}
+
+function renderReply(sentences) {
   const reply = dissolveMessage.querySelector("[data-dissolve-copy]");
   reply.replaceChildren();
-  text.split("。").filter(Boolean).slice(0, 2).forEach((sentence) => {
+  const lines = Array.isArray(sentences) ? sentences : String(sentences).split("。").filter(Boolean).slice(0, 2);
+  lines.forEach((sentence) => {
     const line = document.createElement("span");
-    line.textContent = `${sentence}。`;
+    line.textContent = /[。？！]$/.test(sentence) ? sentence : `${sentence}。`;
     reply.append(line);
   });
 }
@@ -512,7 +761,8 @@ letGoButton.addEventListener("click", () => {
   releaseCard.classList.add("is-dissolving");
   setTimeout(() => {
     releaseCard.hidden = true;
-    renderReply(forms[selectedForm].reply);
+    renderReply(generateReply(text));
+    carryPrompt.hidden = Boolean(currentUser) || getLetters().length < 2;
     dissolveMessage.hidden = false;
   }, 2200);
 });
@@ -605,9 +855,26 @@ function updateCertificate() {
 
 document.querySelector('[data-action="certificate"]').addEventListener("click", () => {
   updateCertificate();
+  shareStatus.textContent = "分享不会带走你写下的私密文字。";
   certificateDialog.showModal();
 });
 document.querySelector('[data-action="close-certificate"]').addEventListener("click", () => certificateDialog.close());
+document.querySelector('[data-action="share"]').addEventListener("click", async () => {
+  const form = forms[selectedForm];
+  const url = `${PUBLIC_APP_URL}?form=${encodeURIComponent(selectedForm)}&from=certificate`;
+  const text = `刚才，我去做了一会儿${form.target}。你也可以在这里待一会儿。`;
+  try {
+    if (navigator.share) {
+      await navigator.share({ title: "不在 · 口袋里的避难所", text, url });
+      shareStatus.textContent = "已经把入口轻轻递出去了。";
+    } else {
+      await navigator.clipboard.writeText(`${text}\n${url}`);
+      shareStatus.textContent = "链接已复制。分享里没有你的私密文字。";
+    }
+  } catch (error) {
+    if (error?.name !== "AbortError") shareStatus.textContent = "暂时没能分享，可以先保存这张证明。";
+  }
+});
 certificateDialog.addEventListener("click", (event) => { if (event.target === certificateDialog) certificateDialog.close(); });
 customDialog.addEventListener("click", (event) => { if (event.target === customDialog) customDialog.close(); });
 lettersDialog.addEventListener("click", (event) => { if (event.target === lettersDialog) lettersDialog.close(); });
@@ -687,9 +954,25 @@ document.querySelector('[data-action="download"]').addEventListener("click", () 
   haptic(18);
 });
 
-document.querySelector('[data-action="rest"]').addEventListener("click", () => {
+const restCopies = {
+  breath: "先不去任何地方",
+  sleep: "今天到这里就够了",
+  after: "把外面的声音放远",
+  home: "这里还在",
+};
+
+document.querySelector('[data-action="rest"]').addEventListener("click", () => momentDialog.showModal());
+document.querySelector('[data-action="close-moment"]').addEventListener("click", () => momentDialog.close());
+momentDialog.addEventListener("click", (event) => { if (event.target === momentDialog) momentDialog.close(); });
+document.querySelector(".moment-options").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-moment]");
+  if (!button) return;
   setVisual(document.querySelector("[data-rest-visual]"), forms[selectedForm]);
+  updateMemoryPresentation();
+  document.querySelector("[data-rest-copy]").textContent = restCopies[button.dataset.moment] || "允许自己不在";
+  momentDialog.close();
   restOverlay.hidden = false;
+  haptic(10);
 });
 
 function endRest() {
@@ -782,6 +1065,43 @@ window.addEventListener("deviceorientation", (event) => {
   applyTilt(Math.max(-18, Math.min(18, event.gamma || 0)), Math.max(-18, Math.min(18, event.beta || 0)));
 });
 
+function visualFromEvent(event) {
+  return event.target.closest?.("[data-element-visual], [data-rest-visual], [data-return-visual]");
+}
+
+document.addEventListener("pointerdown", (event) => {
+  const visual = visualFromEvent(event);
+  if (!visual) return;
+  const bounds = visual.getBoundingClientRect();
+  const x = event.clientX - bounds.left;
+  const y = event.clientY - bounds.top;
+  visual.style.setProperty("--touch-x", `${x}px`);
+  visual.style.setProperty("--touch-y", `${y}px`);
+  visual.classList.add("is-interacting");
+  const echo = document.createElement("span");
+  echo.className = "touch-echo";
+  echo.style.left = `${x}px`;
+  echo.style.top = `${y}px`;
+  visual.append(echo);
+  setTimeout(() => echo.remove(), 1400);
+  haptic(visual.dataset.interactionFamily === "pulse" ? [10, 70, 10] : 10);
+});
+
+document.addEventListener("pointermove", (event) => {
+  if (!event.buttons) return;
+  const visual = visualFromEvent(event);
+  if (!visual) return;
+  const bounds = visual.getBoundingClientRect();
+  visual.style.setProperty("--touch-x", `${event.clientX - bounds.left}px`);
+  visual.style.setProperty("--touch-y", `${event.clientY - bounds.top}px`);
+});
+
+document.addEventListener("pointerup", (event) => {
+  const visual = visualFromEvent(event);
+  if (!visual) return;
+  setTimeout(() => visual.classList.remove("is-interacting"), 500);
+});
+
 function setAccountMode(mode, message = "") {
   accountGuest.hidden = mode !== "guest";
   accountSent.hidden = mode !== "sent";
@@ -812,6 +1132,7 @@ function profilePayload(user = currentUser) {
     user_id: user.id,
     selected_form: selectedForm,
     custom_form: forms.custom || null,
+    sanctuary_state: getMemory(),
   };
 }
 
@@ -927,9 +1248,10 @@ async function syncAfterLogin(user) {
   authSyncing = true;
   setSyncState("syncing", "正在把这台设备上的来信带到云端……");
   const guestLetters = getLettersFromKey("buzai-letters");
+  const guestMemory = getMemoryFromKey("buzai-sanctuary-memory");
   try {
     const [{ data: profile, error: profileError }, existingRows] = await Promise.all([
-      supabaseClient.from("profiles").select("selected_form, custom_form").eq("user_id", user.id).maybeSingle(),
+      supabaseClient.from("profiles").select("selected_form, custom_form, sanctuary_state").eq("user_id", user.id).maybeSingle(),
       fetchCloudLetters(user),
     ]);
     if (profileError) throw profileError;
@@ -944,9 +1266,13 @@ async function syncAfterLogin(user) {
     }
 
     if (profile) {
+      setMemory(mergeMemories(profile.sanctuary_state, guestMemory), user);
       if (profile.custom_form) restoreCustomForm(profile.custom_form);
       if (forms[profile.selected_form]) applyForm(profile.selected_form);
+      const { error } = await supabaseClient.from("profiles").upsert(profilePayload(user), { onConflict: "user_id" });
+      if (error) throw error;
     } else {
+      setMemory(guestMemory, user);
       const { error } = await supabaseClient.from("profiles").upsert(profilePayload(user), { onConflict: "user_id" });
       if (error) throw error;
     }
@@ -955,6 +1281,8 @@ async function syncAfterLogin(user) {
     if (currentUser?.id !== user.id) return;
     setLetters(latestRows.filter((row) => !row.deleted_at).map(letterFromCloud), user);
     localStorage.setItem("buzai-letters", "[]");
+    localStorage.setItem("buzai-sanctuary-memory", JSON.stringify(emptyMemory()));
+    updateMemoryPresentation();
     setSyncState("online", guestLetters.length ? "这台设备上的来信，已经一起带过来了。" : "化身和来信已经同步。 ");
   } catch {
     if (!getLettersFromKey(lettersStorageKey(user)).length && guestLetters.length) setLetters(guestLetters, user);
@@ -973,6 +1301,7 @@ async function handleSession(session) {
     lastSyncedUserId = null;
     setAccountMode("guest");
     setSyncState("guest");
+    updateMemoryPresentation();
     return;
   }
   setAccountMode("user");
@@ -985,10 +1314,13 @@ async function handleSession(session) {
   }
 }
 
-accountButton.addEventListener("click", () => {
+function openAccountDialog() {
   setAccountMode(currentUser ? "user" : "guest");
   accountDialog.showModal();
-});
+}
+
+accountButton.addEventListener("click", openAccountDialog);
+document.querySelector('[data-action="carry-letters"]').addEventListener("click", openAccountDialog);
 document.querySelector('[data-action="close-account"]').addEventListener("click", () => accountDialog.close());
 document.querySelector('[data-action="change-email"]').addEventListener("click", () => setAccountMode("guest"));
 document.querySelector('[data-action="sign-out"]').addEventListener("click", async () => {
@@ -1050,6 +1382,16 @@ document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible" && currentUser) void refreshLettersFromCloud();
 });
 
+if (sharedFormKey && forms[sharedFormKey]) {
+  document.querySelector("[data-door-eyebrow]").textContent = "有人从这里安静地经过";
+  document.querySelector("[data-door-whisper]").textContent = `有人刚刚去做了一会儿${forms[sharedFormKey].target}。你也可以进去待一会儿。`;
+}
+
 renderFormChoices();
-applyForm(selectedForm);
+setReplyMode(replyMode);
+applyForm(selectedForm, { persist: false });
 void initializeAuth();
+
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+  window.addEventListener("load", () => { void navigator.serviceWorker.register("service-worker.js?v=11"); });
+}

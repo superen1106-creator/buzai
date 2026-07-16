@@ -1,0 +1,12 @@
+{
+  "name": "不在｜口袋里的避难所",
+  "short_name": "不在",
+  "description": "世界很吵，但你可以随时关门。",
+  "lang": "zh-CN",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#111713",
+  "theme_color": "#111713"
+}
