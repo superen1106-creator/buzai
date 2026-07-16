@@ -206,7 +206,17 @@ button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 1px
 .form-name { margin: 34px 0 8px; font-size: 17px; letter-spacing: .08em; }
 .form-note { color: var(--muted); font-size: 11px; line-height: 1.8; }
 
-.scene--sanctuary { display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
+.scene--sanctuary {
+  display: flex;
+  width: 100%;
+  max-width: none;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  background: var(--bg);
+  transition: background-color 1.2s ease;
+}
+.scene--sanctuary .weather { display: none; }
 .weather { position: absolute; inset: -10%; pointer-events: none; transform: translate(var(--tilt-x, 0), var(--tilt-y, 0)); transition: transform 1.4s ease-out; }
 .weather-orb { position: absolute; display: block; border-radius: 50%; filter: blur(70px); opacity: .19; animation: drift 15s ease-in-out infinite alternate; }
 .weather-orb--one { width: 45vw; height: 45vw; top: 2%; left: 4%; background: var(--glow); }
