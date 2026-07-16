@@ -226,11 +226,11 @@ const interactionFamilies = {
 };
 
 const interactionCopy = {
-  pulse: "把手放在这里，感受一点重量",
-  flow: "轻轻划过，让它从指尖经过",
-  drift: "碰一碰，看它慢慢离开原处",
-  grow: "轻轻触碰，允许一点生长",
-  glow: "碰一碰，为自己留一点光",
+  pulse: "轻触一下",
+  flow: "轻轻划过",
+  drift: "碰一碰",
+  grow: "碰一碰",
+  glow: "轻触一点光",
 };
 
 const listenReplies = {
@@ -354,6 +354,7 @@ let currentUser = null;
 let authReady = false;
 let authSyncing = false;
 let profileSyncTimer = null;
+let sanctuaryWhisperTimer = null;
 
 function haptic(pattern = 12) {
   if (navigator.vibrate) navigator.vibrate(pattern);
@@ -430,11 +431,9 @@ function memoryLevel(memory = getMemory(), key = selectedForm) {
 
 function memoryCopy(memory = getMemory(), key = selectedForm) {
   const item = selectedMemory(memory, key);
-  if (item.letters >= 4) return "有一些话，已经在这里长成了安静的纹理。";
-  if (item.letters >= 1) return "你写下的话，在这里留下了一点痕迹。";
-  if (item.visits >= 4) return "这个房间，已经认得你回来时的脚步。";
-  if (item.visits >= 2) return "这里记得你来过。";
-  return "这里还很安静，等你按自己的方式待一会儿。";
+  if (item.letters >= 1) return "话留在这里。";
+  if (item.visits >= 2) return "这里记得你。";
+  return "";
 }
 
 function updateMemoryPresentation() {
@@ -442,8 +441,28 @@ function updateMemoryPresentation() {
   document.querySelectorAll("[data-element-visual], [data-return-visual], [data-rest-visual]").forEach((visual) => {
     if (visual) visual.dataset.memoryLevel = level;
   });
-  document.querySelector("[data-memory-whisper]").textContent = memoryCopy();
-  document.querySelector("[data-return-memory]").textContent = memoryCopy();
+  const copy = memoryCopy();
+  const whisper = document.querySelector("[data-memory-whisper]");
+  whisper.textContent = copy;
+  whisper.dataset.copy = copy;
+  whisper.hidden = true;
+  document.querySelector("[data-return-memory]").textContent = copy || "这里还在。";
+}
+
+function scheduleSanctuaryWhisper() {
+  clearTimeout(sanctuaryWhisperTimer);
+  const hint = document.querySelector("[data-interaction-hint]");
+  const memory = document.querySelector("[data-memory-whisper]");
+  hint.hidden = false;
+  hint.classList.remove("is-fading");
+  memory.hidden = true;
+  sanctuaryWhisperTimer = setTimeout(() => {
+    hint.classList.add("is-fading");
+    setTimeout(() => {
+      hint.hidden = true;
+      if (memory.dataset.copy) memory.hidden = false;
+    }, 450);
+  }, 2600);
 }
 
 function recordVisit(key) {
@@ -566,6 +585,7 @@ function enterForm(key) {
   hasVisited = true;
   localStorage.setItem("buzai-has-visited", "true");
   recordVisit(key);
+  scheduleSanctuaryWhisper();
   enteredAt = new Date();
   setTimeout(() => showScene("sanctuary"), 220);
 }
@@ -651,6 +671,7 @@ document.querySelector('[data-action="return"]').addEventListener("click", () =>
   releaseCard.classList.remove("is-dissolving");
   dissolveMessage.hidden = true;
   showScene("sanctuary");
+  scheduleSanctuaryWhisper();
 });
 
 input.addEventListener("input", () => { letGoButton.disabled = !input.value.trim(); });
@@ -1393,5 +1414,5 @@ applyForm(selectedForm, { persist: false });
 void initializeAuth();
 
 if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
-  window.addEventListener("load", () => { void navigator.serviceWorker.register("service-worker.js?v=11"); });
+  window.addEventListener("load", () => { void navigator.serviceWorker.register("service-worker.js?v=12"); });
 }

@@ -709,7 +709,8 @@ button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 1px
 .forms { grid-template-columns: repeat(4, 1fr); }
 .forms[data-feeling="all"] { grid-template-columns: repeat(5, 1fr); }
 
-.interaction-hint { margin: 14px 0 0; color: rgba(232,230,219,.42); font-size: 10px; letter-spacing: .12em; }
+.interaction-hint { margin: 14px 0 0; color: rgba(232,230,219,.42); font-size: 10px; letter-spacing: .12em; transition: opacity .45s ease; }
+.interaction-hint.is-fading { opacity: 0; }
 .memory-whisper { min-height: 20px; margin: 9px 0 0; color: color-mix(in srgb, var(--accent) 56%, transparent); font-size: 9px; letter-spacing: .1em; }
 
 .memory-traces { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
